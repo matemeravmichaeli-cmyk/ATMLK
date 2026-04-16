@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ארכיון ראיונות – מרב מיכאלי</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:    #c0392b;
+      --red-dk: #96281b;
+      --bg:     #f4f4f6;
+      --card:   #ffffff;
+      --border: #dde1e7;
+      --text:   #1a1a2e;
+      --muted:  #6b7280;
+      --green:  #16a34a;
+      --blue:   #2563eb;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--red);
+      color: #fff;
+      padding: 22px 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.18);
+    }
+    header h1 { font-size: 1.45rem; font-weight: 700; }
+    header p  { font-size: .88rem; opacity: .85; margin-top: 2px; }
+    .logo { font-size: 2rem; }
+
+    /* ── Main container ── */
+    main { max-width: 860px; margin: 36px auto; padding: 0 20px; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .card h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      color: var(--red);
+      border-bottom: 2px solid var(--red);
+      padding-bottom: 8px;
+    }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 0; margin-bottom: 24px; border-radius: var(--radius) var(--radius) 0 0; overflow: hidden; border: 1px solid var(--border); }
+    .tab-btn {
+      flex: 1;
+      padding: 13px;
+      border: none;
+      background: #f9fafb;
+      cursor: pointer;
+      font-size: .95rem;
+      font-weight: 600;
+      color: var(--muted);
+      transition: background .15s, color .15s;
+    }
+    .tab-btn.active { background: var(--red); color: #fff; }
+    .tab-btn:not(.active):hover { background: #fee2e2; color: var(--red); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Drop zone ── */
+    #drop-zone {
+      border: 2.5px dashed #cbd5e1;
+      border-radius: 10px;
+      padding: 42px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: #fafbfc;
+    }
+    #drop-zone.dragover { border-color: var(--red); background: #fff0f0; }
+    #drop-zone .icon { font-size: 3rem; margin-bottom: 10px; }
+    #drop-zone p { color: var(--muted); font-size: .93rem; }
+    #drop-zone strong { color: var(--text); }
+    #file-input { display: none; }
+
+    #selected-file {
+      margin-top: 12px;
+      font-size: .88rem;
+      color: var(--green);
+      font-weight: 600;
+      min-height: 20px;
+    }
+
+    /* ── Textarea ── */
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: .93rem;
+      resize: vertical;
+      font-family: inherit;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    textarea:focus { outline: none; border-color: var(--red); }
+
+    .input-row { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+    .input-row input {
+      flex: 1;
+      min-width: 160px;
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: .9rem;
+    }
+    .input-row input:focus { outline: none; border-color: var(--red); }
+    label.field-label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 11px 26px;
+      border: none;
+      border-radius: 8px;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--red); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--red-dk); }
+    .btn-primary:disabled { background: #e5a0a0; cursor: not-allowed; }
+    .btn-copy { background: var(--blue); color: #fff; font-size: .85rem; padding: 8px 16px; }
+    .btn-copy:hover { background: #1d4ed8; }
+    .btn-reset { background: #f1f5f9; color: var(--text); font-size: .85rem; padding: 8px 16px; }
+    .btn-reset:hover { background: #e2e8f0; }
+
+    .submit-row { margin-top: 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+    /* ── Progress ── */
+    #progress-section { display: none; }
+    .progress-bar-wrap {
+      background: #e5e7eb;
+      border-radius: 99px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--red);
+      border-radius: 99px;
+      width: 0%;
+      transition: width .4s ease;
+    }
+    #status-msg { font-size: .9rem; color: var(--muted); }
+
+    /* ── Transcription box ── */
+    #transcription-section { display: none; }
+    #transcription-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: .88rem;
+      line-height: 1.7;
+      max-height: 220px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--text);
+    }
+
+    /* ── Fields table ── */
+    #fields-section { display: none; }
+    .fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 600px) { .fields-grid { grid-template-columns: 1fr; } }
+    .field-item {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+    .field-item .field-name {
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      margin-bottom: 4px;
+    }
+    .field-item .field-value {
+      font-size: .9rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .field-item .field-value.empty { color: #b0b8c4; font-style: italic; }
+
+    /* Badge for סיווג */
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 99px;
+      font-size: .8rem;
+      font-weight: 700;
+    }
+    .badge-חיובי  { background: #dcfce7; color: #15803d; }
+    .badge-שלילי  { background: #fee2e2; color: #b91c1c; }
+    .badge-ניטרלי { background: #e0e7ff; color: #3730a3; }
+    .badge-מעורב  { background: #fef9c3; color: #92400e; }
+
+    /* ── CSV output ── */
+    #csv-section { display: none; }
+    #csv-output {
+      width: 100%;
+      padding: 12px 14px;
+      background: #1e293b;
+      color: #86efac;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: .82rem;
+      border: none;
+      resize: vertical;
+      min-height: 80px;
+      direction: ltr;
+      text-align: left;
+    }
+    .csv-actions { display: flex; gap: 10px; margin-top: 10px; align-items: center; }
+    #copy-feedback { font-size: .85rem; color: var(--green); font-weight: 600; opacity: 0; transition: opacity .3s; }
+
+    /* ── Error ── */
+    #error-section {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: #b91c1c;
+      font-size: .92rem;
+    }
+
+    /* ── Separator ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🗂️</div>
+  <div>
+    <h1>ארכיון ראיונות – מרב מיכאלי</h1>
+    <p>תמלול אוטומטי עם Whisper · ניתוח וסיווג עם Claude · פלט CSV</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── Mode tabs ── -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="file">📁 העלאת קובץ שמע/וידאו</button>
+    <button class="tab-btn" data-tab="text">✏️ הדבקת תמלול קיים</button>
+  </div>
+
+  <!-- ── Tab: File upload ── -->
+  <div class="tab-panel active card" id="tab-file" style="border-radius: 0 0 var(--radius) var(--radius);">
+    <div id="drop-zone" role="button" tabindex="0" aria-label="גרור קובץ לכאן">
+      <div class="icon">🎙️</div>
+      <p><strong>גרור קובץ לכאן</strong> או לחץ לבחירה</p>
+      <p style="margin-top:6px; font-size:.8rem;">MP3, MP4, WAV, M4A, WEBM, OGG, FLAC, MOV · עד 500 MB</p>
+    </div>
+    <input type="file" id="file-input" accept="audio/*,video/*,.mp3,.mp4,.m4a,.wav,.webm,.ogg,.flac,.mov,.mpeg" />
+    <div id="selected-file"></div>
+
+    <div class="submit-row">
+      <button class="btn btn-primary" id="btn-process" disabled>
+        ▶ תמלל ונתח
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Tab: Paste text ── -->
+  <div class="tab-panel card" id="tab-text" style="border-radius: 0 0 var(--radius) var(--radius);">
+    <label class="field-label" for="manual-text">טקסט התמלול</label>
+    <textarea id="manual-text" placeholder="הדבק כאן את תמלול הראיון..."></textarea>
+
+    <div class="input-row">
+      <div style="flex:1">
+        <label class="field-label" for="manual-filename">שם הקובץ / כותרת (אופציונלי)</label>
+        <input type="text" id="manual-filename" placeholder="לדוגמה: שידור חי – ערוץ 12 – 14.03.2025" />
+      </div>
+      <div style="flex:0 0 140px">
+        <label class="field-label" for="manual-duration">משך (שניות, אופציונלי)</label>
+        <input type="number" id="manual-duration" placeholder="לדוגמה: 720" min="0" />
+      </div>
+    </div>
+
+    <div class="submit-row">
+      <button class="btn btn-primary" id="btn-analyze-text">
+        ▶ נתח תמלול
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Progress ── -->
+  <div class="card" id="progress-section">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div id="status-msg">מעבד...</div>
+  </div>
+
+  <!-- ── Error ── -->
+  <div id="error-section">
+    <strong>שגיאה:</strong> <span id="error-msg"></span>
+  </div>
+
+  <!-- ── Transcription ── -->
+  <div class="card" id="transcription-section">
+    <h2>📝 תמלול</h2>
+    <pre id="transcription-box"></pre>
+  </div>
+
+  <!-- ── Fields ── -->
+  <div class="card" id="fields-section">
+    <h2>🔍 ניתוח שדות</h2>
+    <div class="fields-grid" id="fields-grid"></div>
+  </div>
+
+  <!-- ── CSV ── -->
+  <div class="card" id="csv-section">
+    <h2>📋 שורת CSV – מוכנה להדבקה</h2>
+    <textarea id="csv-output" readonly></textarea>
+    <div class="csv-actions">
+      <button class="btn btn-copy" id="btn-copy">📋 העתק CSV</button>
+      <button class="btn btn-reset" id="btn-reset">↩ ניתוח חדש</button>
+      <span id="copy-feedback">הועתק ✓</span>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── Tab switching ──────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── File drop zone ──────────────────────────────────────────────────────────
+const dropZone   = document.getElementById('drop-zone');
+const fileInput  = document.getElementById('file-input');
+const selectedEl = document.getElementById('selected-file');
+const btnProcess = document.getElementById('btn-process');
+
+let selectedFile = null;
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) setFile(file);
+});
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) setFile(fileInput.files[0]);
+});
+
+function setFile(file) {
+  selectedFile = file;
+  const mb = (file.size / 1024 / 1024).toFixed(1);
+  selectedEl.textContent = `✅ ${file.name} (${mb} MB)`;
+  btnProcess.disabled = false;
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+function show(id) { document.getElementById(id).style.display = 'block'; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+function setProgress(pct, msg) {
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('status-msg').textContent = msg;
+}
+
+function showError(msg) {
+  hide('progress-section');
+  document.getElementById('error-msg').textContent = msg;
+  show('error-section');
+}
+
+function renderFields(fields) {
+  const labels = {
+    'נושא_ראשי': 'נושא ראשי',
+    'תאריך_שידור': 'תאריך שידור',
+    'מדיה': 'מדיה',
+    'גוף_תקשורת': 'גוף תקשורת',
+    'שם_התכנית': 'שם התכנית',
+    'סוג_אייטם': 'סוג אייטם',
+    'מראיין': 'מראיין/ת',
+    'סיווג': 'סיווג',
+    'נושאים': 'נושאים',
+    'מילות_מפתח': 'מילות מפתח',
+    'ניימדרופינג': 'ניימדרופינג',
+    'משך': 'משך',
+    'הערות': 'הערות',
+  };
+
+  const grid = document.getElementById('fields-grid');
+  grid.innerHTML = '';
+
+  for (const [key, label] of Object.entries(labels)) {
+    const val = fields[key];
+    const div = document.createElement('div');
+    div.className = 'field-item';
+
+    let valueHtml;
+    if (!val || val.toString().trim() === '') {
+      valueHtml = `<span class="field-value empty">—</span>`;
+    } else if (key === 'סיווג') {
+      const cls = 'badge badge-' + val.trim();
+      valueHtml = `<span class="field-value"><span class="${cls}">${val}</span></span>`;
+    } else {
+      valueHtml = `<span class="field-value">${escapeHtml(val)}</span>`;
+    }
+
+    div.innerHTML = `<div class="field-name">${label}</div>${valueHtml}`;
+    grid.appendChild(div);
+  }
+
+  show('fields-section');
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── SSE stream consumer ──────────────────────────────────────────────────────
+async function consumeStream(response) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const lines = buffer.split('\n');
+    buffer = lines.pop(); // keep incomplete line
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const payload = JSON.parse(line.slice(6));
+      handleEvent(payload);
+    }
+  }
+}
+
+function handleEvent(ev) {
+  if (ev.type === 'status') {
+    const pct = ev.message.includes('Whisper') ? 30 : 70;
+    setProgress(pct, ev.message);
+  }
+  else if (ev.type === 'transcription') {
+    setProgress(60, 'תמלול הושלם – שולח ל-Claude...');
+    document.getElementById('transcription-box').textContent = ev.text;
+    show('transcription-section');
+  }
+  else if (ev.type === 'result') {
+    setProgress(100, 'הושלם!');
+    hide('progress-section');
+    renderFields(ev.fields);
+    document.getElementById('csv-output').value = ev.csv;
+    show('csv-section');
+  }
+  else if (ev.type === 'done') {
+    hide('progress-section');
+  }
+  else if (ev.type === 'error') {
+    showError(ev.message);
+  }
+}
+
+// ── Process file ─────────────────────────────────────────────────────────────
+btnProcess.addEventListener('click', async () => {
+  if (!selectedFile) return;
+
+  // Reset UI
+  hide('error-section');
+  hide('transcription-section');
+  hide('fields-section');
+  hide('csv-section');
+  show('progress-section');
+  setProgress(10, 'מעלה קובץ...');
+  btnProcess.disabled = true;
+
+  const formData = new FormData();
+  formData.append('file', selectedFile);
+
+  try {
+    const res = await fetch('/api/process', { method: 'POST', body: formData });
+    if (!res.ok) {
+      const err = await res.json();
+      showError(err.error || 'שגיאה לא ידועה');
+      btnProcess.disabled = false;
+      return;
+    }
+    await consumeStream(res);
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    btnProcess.disabled = false;
+  }
+});
+
+// ── Analyze text ──────────────────────────────────────────────────────────────
+document.getElementById('btn-analyze-text').addEventListener('click', async () => {
+  const text = document.getElementById('manual-text').value.trim();
+  if (!text) { alert('יש להדביק תמלול לפני הניתוח'); return; }
+
+  hide('error-section');
+  hide('transcription-section');
+  hide('fields-section');
+  hide('csv-section');
+  show('progress-section');
+  setProgress(20, 'שולח ל-Claude...');
+
+  const btn = document.getElementById('btn-analyze-text');
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/analyze-text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        transcription: text,
+        filename: document.getElementById('manual-filename').value || 'ראיון',
+        duration: document.getElementById('manual-duration').value || null,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      showError(err.error || 'שגיאה לא ידועה');
+      return;
+    }
+    await consumeStream(res);
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ── Copy CSV ──────────────────────────────────────────────────────────────────
+document.getElementById('btn-copy').addEventListener('click', async () => {
+  const csv = document.getElementById('csv-output').value;
+  try {
+    await navigator.clipboard.writeText(csv);
+  } catch {
+    // Fallback for browsers without clipboard API
+    const ta = document.getElementById('csv-output');
+    ta.select();
+    document.execCommand('copy');
+  }
+  const fb = document.getElementById('copy-feedback');
+  fb.style.opacity = '1';
+  setTimeout(() => { fb.style.opacity = '0'; }, 2000);
+});
+
+// ── Reset ─────────────────────────────────────────────────────────────────────
+document.getElementById('btn-reset').addEventListener('click', () => {
+  selectedFile = null;
+  selectedEl.textContent = '';
+  btnProcess.disabled = true;
+  fileInput.value = '';
+  document.getElementById('manual-text').value = '';
+  document.getElementById('manual-filename').value = '';
+  document.getElementById('manual-duration').value = '';
+  hide('transcription-section');
+  hide('fields-section');
+  hide('csv-section');
+  hide('progress-section');
+  hide('error-section');
+});
+</script>
+
+</body>
+</html>

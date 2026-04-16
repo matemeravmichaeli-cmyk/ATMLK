@@ -1,0 +1,93 @@
+"""
+Planet position calculations using Swiss Ephemeris (pyswisseph).
+All longitudes are tropical ecliptic degrees (0–360).
+"""
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+from typing import Optional
+
+import swisseph as swe
+
+# Ephemeris path – relative to this file's parent directory
+_EPHE_DIR = os.path.join(os.path.dirname(__file__), "..", "ephe")
+swe.set_ephe_path(os.path.abspath(_EPHE_DIR))
+
+SIGNS = [
+    "Aries", "Taurus", "Gemini", "Cancer",
+    "Leo", "Virgo", "Libra", "Scorpio",
+    "Sagittarius", "Capricorn", "Aquarius", "Pisces",
+]
+
+# Swiss Ephemeris body IDs
+PLANETS = {
+    "sun":     swe.SUN,
+    "moon":    swe.MOON,
+    "mercury": swe.MERCURY,
+    "venus":   swe.VENUS,
+    "mars":    swe.MARS,
+    "jupiter": swe.JUPITER,
+    "saturn":  swe.SATURN,
+    "uranus":  swe.URANUS,
+    "neptune": swe.NEPTUNE,
+    "pluto":   swe.PLUTO,
+}
+
+
+@dataclass
+class PlanetPosition:
+    body: str
+    longitude: float      # tropical ecliptic, 0–360
+    latitude: float
+    distance: float       # AU
+    speed: float          # deg/day; negative = retrograde
+    sign: str
+    degree: float         # degrees within sign, 0–30
+    retrograde: bool
+
+    def label(self) -> str:
+        direction = " ℞" if self.retrograde else ""
+        return f"{self.degree:.2f}° {self.sign}{direction}"
+
+
+def julian_day(year: int, month: int, day: int, hour_ut: float = 12.0) -> float:
+    """Return Julian Day (UT) for the given date and hour."""
+    return swe.julday(year, month, day, hour_ut)
+
+
+def planet_position(body_name: str, jd: float) -> PlanetPosition:
+    """
+    Calculate a planet's position for a given Julian Day.
+
+    Parameters
+    ----------
+    body_name : str
+        One of the keys in PLANETS (lowercase).
+    jd : float
+        Julian Day number (UT).
+    """
+    body_id = PLANETS[body_name.lower()]
+    flags = swe.FLG_SWIEPH | swe.FLG_SPEED
+    result, _ = swe.calc_ut(jd, body_id, flags)
+
+    lon, lat, dist, speed_lon = result[0], result[1], result[2], result[3]
+
+    sign_idx = int(lon / 30) % 12
+    deg_in_sign = lon % 30
+
+    return PlanetPosition(
+        body=body_name.lower(),
+        longitude=lon,
+        latitude=lat,
+        distance=dist,
+        speed=speed_lon,
+        sign=SIGNS[sign_idx],
+        degree=deg_in_sign,
+        retrograde=speed_lon < 0,
+    )
+
+
+def all_positions(jd: float) -> dict[str, PlanetPosition]:
+    """Return positions for all tracked planets."""
+    return {name: planet_position(name, jd) for name in PLANETS}
